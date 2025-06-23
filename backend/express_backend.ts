@@ -315,6 +315,7 @@ class ProtositeBackend {
             "https://www.canva.com",
             "https://canva.com",
             "https://app-aagq8negeak.canva-apps.com",
+            "https://jade-crisp-6f1ef0.netlify.app",
           ];
 
           if (!origin || allowedOrigins.includes(origin)) {

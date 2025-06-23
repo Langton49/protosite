@@ -46,7 +46,7 @@ export const App = () => {
 
   const openExternalEditor = () => {
     if (!preview) return;
-    requestOpenExternalUrl({ url: "https://localhost:5173" });
+    requestOpenExternalUrl({ url: "https://jade-crisp-6f1ef0.netlify.app/" });
   };
 
   const connectToGitHub = async (): Promise<void> => {
@@ -212,7 +212,7 @@ export const App = () => {
       <Rows spacing="2u">
         <Text>
           <FormattedMessage
-            defaultMessage="Generate the code for your website design with the button below. Then click 'Open Preview' to see the generated files and a preview of your app. Allow up to 5 minutes while content is being generated"
+            defaultMessage="Generate the code for your website design with the button below. Then click 'Open Preview' to see the generated files and a preview of your app. Allow up to 3 minutes while content is being generated"
             description="Text to explain the export functionality in the app."
           />
         </Text>
