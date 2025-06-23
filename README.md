@@ -19,9 +19,17 @@ npm install
 npm run start
 npm run start:server
 ```
-- After receiving confirmation that both servers are running on localhost, follow the link below to preview the App:
-[Protosite Preview](https://www.canva.com/login?redirect=%2Fdesign%3Ftype%3DTACQ-gtv2Yk%26create%3D%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayJ9fQ)
+- After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website design:
 
+[Protosite Preview](https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3DEAGRieql5Ds%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayIsIlQiOjF9fQ)
+
+- To try the app with your own template, copy the URL below and replace <TEMPLATE-ID> with the template's id:
+
+```bash
+https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3D<TEMPLATE-ID>%26ui%3D<APP-UI>
+```
+- To find the id, follow the directions detailed at the link below:
+[Generating a Deep Link](https://www.canva.dev/docs/apps/deep-linking/#generate-a-deep-link)
 
 ## Running your Canva App
 
