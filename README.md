@@ -19,7 +19,7 @@ npm install
 npm run start
 npm run start:server
 ```
-4. After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website design:\
+4. After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website design:\n
 
 [Protosite Preview](https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3DEAGRieql5Ds%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayIsIlQiOjF9fQ)
 
@@ -28,7 +28,7 @@ npm run start:server
 ```bash
 https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3D<TEMPLATE-ID>%26ui%3D<APP-UI>
 ```
-6. To find the id, follow the directions detailed at the link below:\
+6. To find the id, follow the directions detailed at the link below:\newline
 
 [Generating a Deep Link](https://www.canva.dev/docs/apps/deep-linking/#generate-a-deep-link)
 
