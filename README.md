@@ -44,6 +44,6 @@ GITHUB_CLIENT_SECRET=
 
 1. To generate React source code from your website design click the 'Generate Source Code' button. You'll be prompted to export the design as an image. Click export to begin content generation.
 2. Allow up to 3 minutes for the AI agent to finish generating the source code. Once done, two buttons will appear: 'Open Preview' and 'Export To GitHub'.
-3. Click 'Open Preview' to view a running preview of the generated site. **NB** This is not a deployment, simply a container through which you can view what the website could look like.
+3. Click 'Open Preview' to view a running preview of the generated site. **NB:** This is not a deployment, simply a container through which you can view what the website could look like.
 4. If you wish to export the source code to a repo you must first connect your GitHub account by clicking the 'Connect To GitHub' button.
 5. Once the app confirms you've connected your account, you should be able to export the generated source code to a new repo in your GitHub profile by clicking the 'Export To GitHub' button.
