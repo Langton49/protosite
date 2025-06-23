@@ -1,19 +1,15 @@
-# Canva App
+# Protosite
 
-Welcome to your Canva App! 🎉
-
-This is a starting point for your app using your chosen template. The complete documentation for the platform is at [canva.dev/docs/apps](https://www.canva.dev/docs/apps/).
-
-**Note:** This code and documentation assumes some experience with TypeScript and React.
+Protosite is a Canva app that allows users to turn their website designs into live, deployable source code. Using generative AI, Protosite creates easy to understand, well-documented, and beginner-friendly code that even the most novice programmer can work with. Protosite makes the workflow from concept to live app easier and quicker making it perfect for anyone who may want to deploy a website quickly.
 
 ## Requirements
 
 - Node.js `v18` or `v20.10.0`
 - npm `v9` or `v10`
 
-**Note:** To make sure you're running the correct version of Node.js, we recommend using a version manager, such as [nvm](https://github.com/nvm-sh/nvm#intro). The [.nvmrc](/.nvmrc) file in the root directory of this repo will ensure the correct version is used once you run `nvm install`.
-
-## Quick start
+## Setup
+- To begin
+- Open a command line terminal and run the following command.
 
 ```bash
 npm install
