@@ -21,7 +21,7 @@ npm run start:server
 ```
 4. After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website design: <br>
 
-[Protosite Preview](https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3DEAGRieql5Ds%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayIsIlQiOjF9fQ)
+  [Protosite Preview](https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3DEAGRieql5Ds%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayIsIlQiOjF9fQ)
 
 5. To try the app with your own template, copy the URL below and replace <TEMPLATE-ID> with the template's id:
 
@@ -30,7 +30,7 @@ https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3D<TEMPLATE-
 ```
 6. To find the id, follow the directions detailed at the link below:<br>
 
-[Generating a Deep Link](https://www.canva.dev/docs/apps/deep-linking/#generate-a-deep-link)
+  [Generating a Deep Link](https://www.canva.dev/docs/apps/deep-linking/#generate-a-deep-link)
 
 **Considerations:** To run the app locally with all its functionality, the following extra environment variables need to be set in an .env file along with the CANVA variable as defined in .env.template:
 
