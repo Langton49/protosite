@@ -20,7 +20,7 @@ npm run start
 npm run start:server
 ```
 - After receiving confirmation that both servers are running on localhost, follow the link below to preview the App:
-[https://www.canva.com/login?redirect=%2Fdesign%3Ftype%3DTACQ-gtv2Yk%26create%3D%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayJ9fQ](https://www.canva.com/login)
+[Protosite Preview](https://www.canva.com/login?redirect=%2Fdesign%3Ftype%3DTACQ-gtv2Yk%26create%3D%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayJ9fQ)
 
 
 ## Running your Canva App
