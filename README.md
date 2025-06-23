@@ -19,7 +19,7 @@ npm install
 npm run start
 npm run start:server
 ```
-4. After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website design: <br>
+4. After receiving confirmation that both servers are running on localhost, follow the link below to preview the App with a predefined website template (**Only available for users on paid plans**) : <br>
 
 [Protosite Preview](https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3DEAGRieql5Ds%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayIsIlQiOjF9fQ)
 
