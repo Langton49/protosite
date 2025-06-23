@@ -8,12 +8,20 @@ Protosite is a Canva app that allows users to turn their website designs into li
 - npm `v9` or `v10`
 
 ## Setup
-- To begin
-- Open a command line terminal and run the following command.
+- To begin, clone this repository onto your local system and navigate to the project's root directory.
+- Open a command line terminal in the root directory and run the following command to install dependencies:
 
 ```bash
 npm install
 ```
+- Once installed, run the following commands to start the development server and the backend respectively:
+```bash
+npm run start
+npm run start:server
+```
+- After receiving confirmation that both servers are running on localhost, follow the link below to preview the App:
+(https://www.canva.com/login?redirec)[https://www.canva.com/login?redirect=%2Fdesign%3Ftype%3DTACQ-gtv2Yk%26create%3D%26ui%3DeyJFIjp7IkE_IjoiTiIsIlMiOiJBQUdxOE5lZ2VBayJ9fQ]
+
 
 ## Running your Canva App
 
