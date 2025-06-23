@@ -55,7 +55,6 @@ export const App = () => {
     setIsConnecting(true);
 
     try {
-      // Request GitHub OAuth URL from backend
       const response = await fetch(`${backendUrl}/api/github/auth`, {
         method: "POST",
         headers: {
@@ -69,10 +68,8 @@ export const App = () => {
 
       const data: GitHubAuthResponse = await response.json();
 
-      // Open GitHub OAuth in external browser
       await requestOpenExternalUrl({ url: data.authUrl });
 
-      // Start polling for authentication completion
       await pollForGitHubAuth(data.state);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -84,7 +81,7 @@ export const App = () => {
   };
 
   const pollForGitHubAuth = async (state: string): Promise<void> => {
-    const maxAttempts = 30; // 5 minutes with 10-second intervals
+    const maxAttempts = 30;
     let attempts = 0;
 
     const checkAuth = async (): Promise<boolean> => {
@@ -119,10 +116,10 @@ export const App = () => {
         if (isAuthenticated) break;
 
         attempts++;
-        await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10s
+        await new Promise((resolve) => setTimeout(resolve, 10000));
       }
 
-      setIsConnecting(false); // ✅ Moved here
+      setIsConnecting(false);
     };
 
     await poll();
@@ -134,14 +131,12 @@ export const App = () => {
     setIsExporting(true);
 
     try {
-      // Get the current project structure
       const projectResponse = await fetch(`${backendUrl}/api/project`);
       if (!projectResponse.ok) {
         throw new Error("Failed to get project data");
       }
       const projectData = await projectResponse.json();
 
-      // Create GitHub repository and push code
       const response = await fetch(`${backendUrl}/api/github/export`, {
         method: "POST",
         headers: {
@@ -150,7 +145,7 @@ export const App = () => {
         body: JSON.stringify({
           token: githubToken,
           projectData: projectData.app,
-          repoName: `canva-design-${Date.now()}`, // Generate unique repo name
+          repoName: `canva-design-${Date.now()}`,
           description: "Generated from Canva design using Protosite",
         }),
       });
@@ -162,7 +157,6 @@ export const App = () => {
       const data: GitHubRepoResponse = await response.json();
 
       if (data.success) {
-        // Open the newly created repository
         await requestOpenExternalUrl({ url: data.repoUrl });
       } else {
         throw new Error(data.message || "Export failed");

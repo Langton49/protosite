@@ -376,8 +376,6 @@ class ProtositeBackend {
         // eslint-disable-next-line no-console
         console.log(this.appStructure);
 
-        // await this.sendToProtositeHost(projectStructure);
-
         res.json({
           success: true,
           message: "File processed successfully",
@@ -439,7 +437,6 @@ class ProtositeBackend {
             return res.status(400).send("Invalid callback parameters");
           }
 
-          // Verify state parameter
           const session = this.githubAuthSessions.get(state);
           if (!session) {
             return res
@@ -550,7 +547,6 @@ class ProtositeBackend {
             });
           }
 
-          // Check if session is expired (10 minutes)
           if (Date.now() - session.timestamp > 10 * 60 * 1000) {
             this.githubAuthSessions.delete(state);
             return res.status(410).json({
@@ -598,10 +594,8 @@ class ProtositeBackend {
             auth: token,
           });
 
-          // Get authenticated user info
           const { data: user } = await octokit.rest.users.getAuthenticated();
 
-          // Create a new repository
           const { data: repo } =
             await octokit.rest.repos.createForAuthenticatedUser({
               name: repoName,
@@ -610,7 +604,6 @@ class ProtositeBackend {
               auto_init: false,
             });
 
-          // Convert project structure to files and create them
           await this.createFiles(
             octokit,
             user.login,
@@ -660,7 +653,6 @@ class ProtositeBackend {
             `Add ${fullPath}`,
           );
 
-          // Add delay to avoid rate limiting
           await new Promise((resolve) => setTimeout(resolve, 100));
         } else if ("directory" in value) {
           await this.createFiles(
@@ -674,7 +666,6 @@ class ProtositeBackend {
       }
     }
 
-    // Create README.md at the end
     const readmeContent = `# Canva Design Export
 
 This project was generated from a Canva design using Protosite.
@@ -710,7 +701,6 @@ This application was automatically generated from your Canva design and converte
     message,
   ) {
     try {
-      // Try to get existing file to check if it exists
       let sha = null;
       try {
         const { data: existingFile } = await octokit.rest.repos.getContent({
@@ -719,18 +709,15 @@ This application was automatically generated from your Canva design and converte
           path,
         });
 
-        // If file exists and is a file (not directory), get its SHA
         if (!Array.isArray(existingFile) && existingFile.type === "file") {
           sha = existingFile.sha;
         }
       } catch (error: any) {
-        // File doesn't exist, which is fine for creation
         if (error.status !== 404) {
           throw error;
         }
       }
 
-      // Create or update the file
       const params: any = {
         owner,
         repo,
@@ -739,7 +726,6 @@ This application was automatically generated from your Canva design and converte
         content: Buffer.from(content).toString("base64"),
       };
 
-      // Include SHA if file already exists
       if (sha) {
         params.sha = sha;
       }
