@@ -6,6 +6,8 @@ import { z } from "zod";
 import { Agent, run } from "@openai/agents";
 import type { Request, Response } from "express";
 import { createBaseServer } from "../utils/backend/base_backend/create";
+import { Octokit } from "@octokit/rest";
+import crypto from "crypto";
 
 dotenv.config(); // Configure environment variables
 /*
@@ -283,6 +285,12 @@ class ProtositeBackend {
   private openaiService: OpenAIService;
   private router: express.Router;
   private appStructure: AppSchema;
+  private githubAuthSessions: Map<
+    string,
+    { timestamp: number; token?: string }
+  > = new Map<string, { timestamp: number; token?: string }>();
+  private readonly GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+  private readonly GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
   constructor() {
     this.app = express();
@@ -333,61 +341,424 @@ class ProtositeBackend {
       });
     });
 
-    this.router.post(
-      "/protosite/upload",
+    this.router.post("/api/upload", async (req: Request, res: Response) => {
+      try {
+        const imageUrl = req.body.imageUrl;
+        // eslint-disable-next-line no-console
+        console.log(imageUrl);
+        if (!imageUrl || typeof imageUrl !== "string") {
+          return res.status(400).json({
+            error: "Malformed or invalid URL.",
+          });
+        }
+
+        const image = await fetch(imageUrl);
+        if (!image.ok) {
+          return res.status(500).json({
+            error: "Failed to fetch image from URL.",
+          });
+        }
+
+        const buffer = Buffer.from(await image.arrayBuffer());
+
+        if (buffer.length > 10 * 1024 * 1024) {
+          return res.status(400).json({
+            error: "File too large. Max. size is 10MB",
+          });
+        }
+
+        const description = await this.openaiService.getImageDesc(buffer);
+        const appFiles =
+          await this.openaiService.generateAppContent(description);
+        const projectStructure = this.buildAppHierarchy(appFiles);
+        this.appStructure = projectStructure;
+        // eslint-disable-next-line no-console
+        console.log(this.appStructure);
+
+        // await this.sendToProtositeHost(projectStructure);
+
+        res.json({
+          success: true,
+          message: "File processed successfully",
+          project: projectStructure,
+        });
+
+        // eslint-disable-next-line no-console
+        console.log("Success");
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Error uploading image", error);
+        throw new Error("Image upload failed. Try again shortly.");
+      }
+    });
+
+    this.router.post("/api/github/auth", (req: Request, res: Response) => {
+      try {
+        if (!this.GITHUB_CLIENT_ID) {
+          return res.status(500).json({
+            error: "GitHub OAuth not configured",
+          });
+        }
+
+        const state = crypto.randomBytes(32).toString("hex");
+
+        this.githubAuthSessions.set(state, {
+          timestamp: Date.now(),
+        });
+
+        this.cleanupAuthSessions();
+
+        const authUrl = `https://github.com/login/oauth/authorize?client_id=${this.GITHUB_CLIENT_ID}&scope=repo&state=${state}&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get("host")}/api/github/callback`)}`;
+
+        res.json({
+          authUrl,
+          state,
+        });
+      } catch (error) {
+        //eslint-disable-next-line no-console
+        console.error("Error initiating GitHub auth:", error);
+        res.status(500).json({
+          error: "Failed to initiate GitHub authentication",
+        });
+      }
+    });
+
+    this.router.get(
+      "/api/github/callback",
       async (req: Request, res: Response) => {
         try {
-          const imageUrl = req.body.imageUrl;
-          // eslint-disable-next-line no-console
-          console.log(imageUrl);
-          if (!imageUrl || typeof imageUrl !== "string") {
-            return res.status(400).json({
-              error: "Malformed or invalid URL.",
-            });
+          const { code, state } = req.query;
+
+          if (
+            !code ||
+            !state ||
+            typeof code !== "string" ||
+            typeof state !== "string"
+          ) {
+            return res.status(400).send("Invalid callback parameters");
           }
 
-          const image = await fetch(imageUrl);
-          if (!image.ok) {
-            return res.status(500).json({
-              error: "Failed to fetch image from URL.",
-            });
+          // Verify state parameter
+          const session = this.githubAuthSessions.get(state);
+          if (!session) {
+            return res
+              .status(400)
+              .send("Invalid or expired authentication session");
           }
 
-          const buffer = Buffer.from(await image.arrayBuffer());
+          const tokenResponse = await fetch(
+            "https://github.com/login/oauth/access_token",
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                client_id: this.GITHUB_CLIENT_ID,
+                client_secret: this.GITHUB_CLIENT_SECRET,
+                code,
+                redirect_uri: `${req.protocol}://${req.get("host")}/api/github/callback`,
+              }),
+            },
+          );
 
-          if (buffer.length > 10 * 1024 * 1024) {
-            return res.status(400).json({
-              error: "File too large. Max. size is 10MB",
-            });
+          const tokenData = await tokenResponse.json();
+
+          if (tokenData.access_token) {
+            session.token = tokenData.access_token;
+
+            res.send(`
+        <html>
+          <head>
+            <title>GitHub Connected</title>
+            <style>
+              body { font-family: system-ui; padding: 40px; text-align: center; background: #f6f8fa; }
+              .success { background: #d1e7dd; border: 1px solid #badbcc; color: #0f5132; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 400px; }
+              .icon { font-size: 48px; margin-bottom: 16px; }
+            </style>
+          </head>
+          <body>
+            <div class="success">
+              <div class="icon">✅</div>
+              <h2>GitHub Connected Successfully!</h2>
+              <p>You can now close this window and return to Canva.</p>
+            </div>
+            <script>
+              // Auto-close after 3 seconds
+              setTimeout(() => {
+                window.close();
+              }, 3000);
+            </script>
+          </body>
+        </html>
+      `);
+          } else {
+            throw new Error("Failed to obtain access token");
           }
-
-          const description = await this.openaiService.getImageDesc(buffer);
-          const appFiles =
-            await this.openaiService.generateAppContent(description);
-          const projectStructure = this.buildAppHierarchy(appFiles);
-          this.appStructure = projectStructure;
-
-          // await this.sendToProtositeHost(projectStructure);
-
-          res.json({
-            success: true,
-            message: "File processed successfully",
-            project: projectStructure,
-          });
-
-          // eslint-disable-next-line no-console
-          console.log("Success");
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error("Error uploading image", error);
-          throw new Error("Image upload failed. Try again shortly.");
+          console.error("Error in GitHub callback:", error);
+          res.status(500).send(`
+      <html>
+        <head>
+          <title>GitHub Connection Failed</title>
+          <style>
+            body { font-family: system-ui; padding: 40px; text-align: center; background: #f6f8fa; }
+            .error { background: #f8d7da; border: 1px solid #f5c2c7; color: #842029; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 400px; }
+            .icon { font-size: 48px; margin-bottom: 16px; }
+          </style>
+        </head>
+        <body>
+          <div class="error">
+            <div class="icon">❌</div>
+            <h2>GitHub Connection Failed</h2>
+            <p>Please try again from the Canva app.</p>
+          </div>
+        </body>
+      </html>
+    `);
         }
       },
     );
 
-    this.router.get("/protosite/project", (req: Request, res: Response) => {
+    this.router.get("/api/project", (req: Request, res: Response) => {
+      // eslint-disable-next-line no-console
+      console.log("appStructure", this.appStructure.src);
       return res.json({ app: this.appStructure });
     });
+
+    this.router.post(
+      "/api/github/auth/status",
+      (req: Request, res: Response) => {
+        try {
+          const { state } = req.body;
+
+          if (!state || typeof state !== "string") {
+            return res.status(400).json({
+              error: "Invalid state parameter",
+            });
+          }
+
+          const session = this.githubAuthSessions.get(state);
+
+          if (!session) {
+            return res.status(404).json({
+              authenticated: false,
+              error: "Session not found",
+            });
+          }
+
+          // Check if session is expired (10 minutes)
+          if (Date.now() - session.timestamp > 10 * 60 * 1000) {
+            this.githubAuthSessions.delete(state);
+            return res.status(410).json({
+              authenticated: false,
+              error: "Session expired",
+            });
+          }
+
+          if (session.token) {
+            res.json({
+              authenticated: true,
+              token: session.token,
+            });
+          } else {
+            res.json({
+              authenticated: false,
+            });
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error("Error checking GitHub auth status:", error);
+          res.status(500).json({
+            error: "Failed to check authentication status",
+          });
+        }
+      },
+    );
+
+    this.router.post(
+      "/api/github/export",
+      async (req: Request, res: Response) => {
+        try {
+          const { token, projectData, repoName, description } = req.body;
+
+          // eslint-disable-next-line no-console
+          console.log("projectData", projectData.src);
+
+          if (!token || !projectData || !repoName) {
+            return res.status(400).json({
+              error: "Missing required parameters",
+            });
+          }
+
+          const octokit = new Octokit({
+            auth: token,
+          });
+
+          // Get authenticated user info
+          const { data: user } = await octokit.rest.users.getAuthenticated();
+
+          // Create a new repository
+          const { data: repo } =
+            await octokit.rest.repos.createForAuthenticatedUser({
+              name: repoName,
+              description: description || "Generated from Canva design",
+              private: false,
+              auto_init: false,
+            });
+
+          // Convert project structure to files and create them
+          await this.createFiles(
+            octokit,
+            user.login,
+            repoName,
+            "",
+            projectData,
+          );
+
+          res.json({
+            success: true,
+            repoUrl: repo.html_url,
+            message: "Project exported successfully to GitHub",
+          });
+        } catch (error: any) {
+          // eslint-disable-next-line no-console
+          console.error("Error exporting to GitHub:", error);
+
+          let errorMessage = "Failed to export to GitHub";
+          if (error.response?.status === 401) {
+            errorMessage = "GitHub authentication expired. Please reconnect.";
+          } else if (error.response?.status === 422) {
+            errorMessage = "Repository name already exists. Please try again.";
+          }
+
+          res.status(500).json({
+            success: false,
+            error: errorMessage,
+          });
+        }
+      },
+    );
+  }
+
+  private async createFiles(octokit, owner, repo, currentPath, directoryObj) {
+    for (const [key, value] of Object.entries(directoryObj)) {
+      const fullPath = currentPath ? `${currentPath}/${key}` : key;
+
+      if (typeof value === "object" && value != null) {
+        if ("file" in value) {
+          const content = value.file.contents;
+          await this.createOrUpdateFile(
+            octokit,
+            owner,
+            repo,
+            fullPath,
+            content,
+            `Add ${fullPath}`,
+          );
+
+          // Add delay to avoid rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        } else if ("directory" in value) {
+          await this.createFiles(
+            octokit,
+            owner,
+            repo,
+            fullPath,
+            value.directory,
+          );
+        }
+      }
+    }
+
+    // Create README.md at the end
+    const readmeContent = `# Canva Design Export
+
+This project was generated from a Canva design using Protosite.
+
+## Getting Started
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+## About
+
+This application was automatically generated from your Canva design and converted into a working web application.
+`;
+
+    await this.createOrUpdateFile(
+      octokit,
+      owner,
+      repo,
+      "README.md",
+      readmeContent,
+      "Add README",
+    );
+  }
+
+  private async createOrUpdateFile(
+    octokit,
+    owner,
+    repo,
+    path,
+    content,
+    message,
+  ) {
+    try {
+      // Try to get existing file to check if it exists
+      let sha = null;
+      try {
+        const { data: existingFile } = await octokit.rest.repos.getContent({
+          owner,
+          repo,
+          path,
+        });
+
+        // If file exists and is a file (not directory), get its SHA
+        if (!Array.isArray(existingFile) && existingFile.type === "file") {
+          sha = existingFile.sha;
+        }
+      } catch (error: any) {
+        // File doesn't exist, which is fine for creation
+        if (error.status !== 404) {
+          throw error;
+        }
+      }
+
+      // Create or update the file
+      const params: any = {
+        owner,
+        repo,
+        path,
+        message,
+        content: Buffer.from(content).toString("base64"),
+      };
+
+      // Include SHA if file already exists
+      if (sha) {
+        params.sha = sha;
+      }
+
+      await octokit.rest.repos.createOrUpdateFileContents(params);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Error creating/updating file ${path}:`, error);
+      throw error;
+    }
+  }
+
+  private cleanupAuthSessions(): void {
+    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+
+    for (const [state, session] of this.githubAuthSessions.entries()) {
+      if (session.timestamp < tenMinutesAgo) {
+        this.githubAuthSessions.delete(state);
+      }
+    }
   }
 
   private buildAppHierarchy(appFiles) {

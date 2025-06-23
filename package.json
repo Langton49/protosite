@@ -29,6 +29,10 @@
     "@canva/error": "^2.1.0",
     "@canva/platform": "^2.1.0",
     "@canva/user": "^2.1.0",
+    "@octokit/rest": "^22.0.0",
+    "@openai/agents": "^0.0.9",
+    "crypto": "^1.0.1",
+    "openai": "^5.6.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-intl": "6.8.7"
