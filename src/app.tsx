@@ -46,7 +46,9 @@ export const App = () => {
 
   const openExternalEditor = () => {
     if (!preview) return;
-    requestOpenExternalUrl({ url: "https://jade-crisp-6f1ef0.netlify.app/" });
+    requestOpenExternalUrl({
+      url: "https://jade-crisp-6f1ef0.netlify.app/editor",
+    });
   };
 
   const connectToGitHub = async (): Promise<void> => {

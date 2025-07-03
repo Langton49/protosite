@@ -62,7 +62,7 @@ Key rules:
   - Pages go in 'src/'
   - Components go in 'src/components/'
   - Styles go in 'src/styles/'
-- Reference styles in main.jsx with ./styles
+- Reference index.css in main.jsx with ./styles/index.css
 - Reference components in main.jsx with ./components
 - Reference styles in components with ..styles
 - Create 'main.jsx' under pages and include the root ReactDOM render logic.
@@ -285,6 +285,7 @@ class ProtositeBackend {
   private openaiService: OpenAIService;
   private router: express.Router;
   private appStructure: AppSchema;
+  private contentOk: boolean;
   private githubAuthSessions: Map<
     string,
     { timestamp: number; token?: string }
@@ -300,6 +301,7 @@ class ProtositeBackend {
     this.routeSetup();
     this.appStructure = AppSchema.getAppSchema();
     this.app.use("/", this.router);
+    this.contentOk = false;
   }
 
   private middlewareSetup() {
@@ -373,17 +375,12 @@ class ProtositeBackend {
           await this.openaiService.generateAppContent(description);
         const projectStructure = this.buildAppHierarchy(appFiles);
         this.appStructure = projectStructure;
-        // eslint-disable-next-line no-console
-        console.log(this.appStructure);
-
+        this.contentOk = true;
         res.json({
           success: true,
           message: "File processed successfully",
           project: projectStructure,
         });
-
-        // eslint-disable-next-line no-console
-        console.log("Success");
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Error uploading image", error);
@@ -521,9 +518,10 @@ class ProtositeBackend {
     );
 
     this.router.get("/api/project", (req: Request, res: Response) => {
-      // eslint-disable-next-line no-console
-      console.log("appStructure", this.appStructure.src);
-      return res.json({ app: this.appStructure });
+      return res.json({
+        success: this.contentOk,
+        app: this.appStructure,
+      });
     });
 
     this.router.post(
