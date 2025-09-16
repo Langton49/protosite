@@ -38,57 +38,7 @@ https://www.canva.com/login/?redirect=%2Fdesign%3Fcreate%26template%3D<TEMPLATE-
 OPENAI_API_KEY= 
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
-``` 
-
-```mermaid
-graph TB
-    subgraph "Design Platform APIs"
-        FIGMA[Figma API]
-        CANVA[Canva API]
-        XD[Adobe XD API]
-    end
-    
-    subgraph "Core Backend Services"
-        API[API Gateway]
-        AUTH[Authentication Service]
-        DI[Design Import Service]
-        LG[Langgraph AI Agent]
-        DB[(Database)]
-    end
-    
-    subgraph "Frontend & Collaboration"
-        WEB[Web Application]
-        WC[WebContainer API]
-        PREV[Preview Engine]
-    end
-    
-    subgraph "External Integrations"
-        GH[GitHub API]
-        SLACK[Slack API]
-        NOTION[Notion API]
-    end
-    
-    FIGMA --> DI
-    CANVA --> DI
-    XD --> DI
-    
-    WEB --> API
-    API --> AUTH
-    API --> DI
-    API --> LG
-    DI --> DB
-    LG --> DB
-    
-    WEB --> WC
-    WC --> PREV
-    
-    API --> GH
-    API --> SLACK
-    API --> NOTION
-    
-    LG --> PREV
 ```
-
 
 ## Using The App
 
